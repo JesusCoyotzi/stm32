@@ -17,6 +17,8 @@ allows me to do some debug.
 STM32F103C8 clone: CK32f103C8 a cheap knock off from mercadolibre
 that works like a charm.  Had to do some stuff to get it working.
 - Added chip id to OpenOCD config files
+  File in question: /usr/share/openocd/scripts/target/stm32f1x.cfg
+    added: set CPUTAPID 0x2ba01477
 
 ST-Link v2 a simple usb based debugger based around JTAG, again works way better
 than expected.  I suspect my part is just a chinesse copy. It works regardless
