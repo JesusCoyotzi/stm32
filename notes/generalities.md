@@ -35,8 +35,8 @@ seem a bit more generic. They are meant to work on all ARMS.
 
 The vendor provided way to load firmware, HAL libraries, and create
 boilerplate code very usefull if you do not want to spend 15 hrs reading the
-user guide trying to figure out Wich register to set UART baud rate.  Importante
-setup
+user guide trying to figure out Wich register to set UART baud rate. 
+Important setup
 - Under project manager in setup select Makefile to use gcc eabi
 - On Pinout config, SYS, select Serial Wire as Debug to make st-link work 
 
@@ -50,8 +50,16 @@ openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg ```
 Then on gdb attach to openocd server and restart, load program and continue ```
 target remote :3333
 monitor reset halt 
-load continue
+load 
+continue
 
+```
+
+In case you want, most likely debug symbols, ie TIM2->CCR1 you can add on 
+Makefile:
+```Makefile
+CFLAGS += -g3 -gdwarf-4
+OPTS = -g3 # this one not needed
 ```
 
 ## Programming Little notes for every section i wanted to use

@@ -21,7 +21,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
-#include "raine.c"
+//#include "cast.c"
+#include "raine64.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -39,7 +40,8 @@
 #define DATA_ADDR 0x40
 
 #define PIX_PER_COL 8
-#define PAGES_PER_SCREEN 4
+//#define PAGES_PER_SCREEN 4
+#define PAGES_PER_SCREEN 8
 #define COLS_PER_PAGE 128
 #define WIDTH COLS_PER_PAGE
 #define HEIGHT PIX_PER_COL * PAGES_PER_SCREEN  
@@ -155,6 +157,14 @@ int main(void)
   MX_USART1_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  // For 32 lines
+//  uint8_t mux_lines = 0x1f;
+//  uint8_t com_conf = 0x02;
+  // For 64 lines
+   uint8_t mux_lines = 0x3f;
+   uint8_t com_conf = 0x12;
+
+  
   uint8_t turn_on = 0xAF;
   uint8_t turn_off = 0xAE;
   write_cmd_oled(turn_off);
@@ -177,7 +187,7 @@ int main(void)
   write_cmd_oled(0xFF);
   //Set mux
   write_cmd_oled(0xa8);
-  write_cmd_oled(0x1F);
+  write_cmd_oled(mux_lines);
   //Follow RAM
   write_cmd_oled(0xA4);
   //No offset 
@@ -193,7 +203,9 @@ int main(void)
   write_cmd_oled(0x22);
   //Com pins
   write_cmd_oled(0xDA);
-  write_cmd_oled(0x02);
+  // For 64 lines
+  write_cmd_oled(com_conf);
+  
 
   //Turn on
   //Vcomh
@@ -211,8 +223,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int i = 0;
-  int j = 0;
   size_t buff_len = COLS_PER_PAGE*PAGES_PER_SCREEN; //128*4
   uint8_t buffer[buff_len];
   for(int j=0;j < buff_len; j++)
@@ -222,33 +232,20 @@ int main(void)
 
 
   //Image?
-  size_t line_len = 32;
-//Original
- /* uint8_t first_line[] =  {  255,255,249,249,249,225, 39, 39, 30,134,134,  
-                             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,134,134,
-                             30, 39, 39,225,249,249,249,255,255};
-  uint8_t second_line[] = {  1,   1,255,131,131,241, 12, 12,130,113,113,
-                             236, 12, 12, 16, 96, 96, 16, 12, 12,236,113,
-                             113, 130, 12, 12,241,131,131,255,  1,  1}; 
-  uint8_t third_line[] =  {  0,  0, 31,225,225, 29, 98, 98,131,  0,  0,  
-                             3,  0,  0, 96, 96, 96, 96,  0,  0,  3,  0, 
-                             0,131, 98, 98, 29,225,225, 31,  0,  0};
-  uint8_t fourth_line[] = {  0,  0,  0,  0,  0,  3,  7,  7,  0,  3,  3,  
-                             4,  8,  8, 11, 11, 11, 11,  8,  8,  4,  3,  
-                             3,  0,  7,  7,  3,  0,  0,  0,  0,  255 };
-  
-  memcpy(buffer,first_line,line_len);
-  memcpy(buffer+128,second_line,line_len);
-  memcpy(buffer+256,third_line,line_len);
-  memcpy(buffer+384,fourth_line,line_len);
-*/
+  size_t line_len = 128;
+  for(int k = 0 ; k<PAGES_PER_SCREEN; k++)
+  {
+  memcpy(buffer+k*128,raine+k*line_len,line_len);
+  }
+  /*
   memcpy(buffer,raine,line_len);
   memcpy(buffer+128,raine+line_len,line_len);
   memcpy(buffer+256,raine+2*line_len,line_len);
   memcpy(buffer+384,raine+3*line_len,line_len);
-  
+  */
 
   int state = 0;
+  int i = 0; 
   while (1)
   {
     /* USER CODE END WHILE */
