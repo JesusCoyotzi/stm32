@@ -17,15 +17,13 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "string.h"
-//#include "cast.c"
-#include "raine64.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "rain64.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -85,46 +83,6 @@ void write_data_oled(uint8_t* dataBuffer, size_t dataSize)
 }
 /* USER CODE END 0 */
 
-void fill_black(uint8_t* buffer, size_t sz)
-{
-  // fill page buffer with black
-  //uint8_t blck[128] = {0}
-  for (int i = 0 ; i < sz ; i++)
-  {
-    buffer[i]=0; 
-  }
-//  HAL_I2C_Mem_Write(&hi2c1,OLED_ADDR, DATA_ADDR, 1, blck, 128, 100);
-}
-
-void draw_line_page(int h, uint8_t *buffer, size_t sz)
-{
-  //Draws horizontal line in screen at heigth h on a single page buffer
-  int line = 1 << h;
-  for (int i = 0 ; i < sz; i++)
-  {
-    buffer[i] = line;
-  }
-}
-
-void draw_line(int h, uint8_t *buffer, size_t sz)
-{
-  int page = h / PIX_PER_COL;
-  int offset = h - page*PIX_PER_COL;
-  int value = 1 << offset;
-  for (int i=0 ; i< sz; i++){
-    if ( i / COLS_PER_PAGE == page  )
-    {
-       buffer[i] = value; 
-    }
-    else 
-    {
-      buffer[i] = 0;
-    }
-  }
-
-  return;
-}
-
 /**
   * @brief  The application entry point.
   * @retval int
@@ -134,7 +92,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -157,6 +114,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+
   // For 32 lines
 //  uint8_t mux_lines = 0x1f;
 //  uint8_t com_conf = 0x02;
@@ -203,9 +161,7 @@ int main(void)
   write_cmd_oled(0x22);
   //Com pins
   write_cmd_oled(0xDA);
-  // For 64 lines
   write_cmd_oled(com_conf);
-  
 
   //Turn on
   //Vcomh
@@ -218,8 +174,6 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 
   /* USER CODE END 2 */
- 
- 
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -227,7 +181,7 @@ int main(void)
   uint8_t buffer[buff_len];
   for(int j=0;j < buff_len; j++)
   {
-   buffer[j]=0x00;
+   buffer[j]=0x01;
   }
 
 
@@ -239,11 +193,12 @@ int main(void)
   }
   /*
   memcpy(buffer,raine,line_len);
-  memcpy(buffer+128,raine+line_len,line_len);
+  memcpy(buffer+129,raine+line_len,line_len);
   memcpy(buffer+256,raine+2*line_len,line_len);
   memcpy(buffer+384,raine+3*line_len,line_len);
   */
 
+  write_data_oled(buffer,buff_len);
   int state = 0;
   int i = 0; 
   while (1)
@@ -254,8 +209,8 @@ int main(void)
     //write_cmd_oled(0xB0+j);
     //No i have no idea why i have tro write twice
     //If i do not skips every pair line
-    write_data_oled(buffer,buff_len);
     HAL_Delay(100);
+    HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
     //draw_line(i,buffer, buff_len);
     //write_data_oled(buffer,buff_len);
     //HAL_Delay(100);
@@ -263,39 +218,9 @@ int main(void)
    // write_data_oled(buffer,buff_len);
    // write_data_oled(buffer,buff_len);
    // write_data_oled(buffer,buff_len);
-    switch (state)
-    {
-      case 0:
-        i++;
-        if (i > HEIGHT - 3){
-           state = 1;
-        }
-        break;
-      case 1:
-        i--;
-        if (i < 1 ){
-            state = 0;
-        }
-        break;
-    }
-  
-//    for( int j=0;j < buff_len; j++)
-
-//    {
-//      buffer[j]=buffer[j]>>1;
-//    }
-//    if (buffer[0] >= 127)
-//    {
-//      for( int j=0;j < buff_len; j++)
-//      {
-//        buffer[j]=1;
-//      }
-//    }
-//
-    
-  }
   
   /* USER CODE END 3 */
+  }
 }
 
 /**
@@ -307,7 +232,8 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -317,7 +243,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -427,7 +353,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-/* USER CODE END 5 */
+/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
@@ -450,7 +376,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
