@@ -6,7 +6,7 @@ of ARM while doing some embedded programming
 
 ## ToolChain 
 
-Using gnu-noe-eabi ToolChain to build the project and CubeMx for
+Using gnu-none-eabi ToolChain to build the project and CubeMx for
 template generation.  Right now those two work out the box as long as I am able
 to get the configuration right.  For debugging I use OpenOCD + gdb-multiarch
 there is no printf in the embedded world especially if there is no OS so that
